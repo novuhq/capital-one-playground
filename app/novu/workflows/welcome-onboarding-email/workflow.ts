@@ -1,13 +1,13 @@
-import { workflow } from '@novu/framework';
-import { z } from 'zod';
-import { renderEmail } from '../../emails/novu-onboarding-email';
-import { emailControlSchema, payloadSchema } from './schemas';
+import { workflow } from "@novu/framework";
+import { z } from "zod";
+import { renderEmail } from "../../emails/novu-onboarding-email";
+import { emailControlSchema, payloadSchema } from "./schemas";
 
 export const welcomeOnboardingEmail = workflow(
-  'onboarding-workflow',
+  "onboarding-workflow",
   async ({ step, payload }) => {
     const customResolver = await step.custom(
-      'custom-resolver',
+      "custom-resolver",
       async () => {
         const shouldSkip = await mockInspectionService(300);
 
@@ -19,12 +19,12 @@ export const welcomeOnboardingEmail = workflow(
         outputSchema: z.object({
           shouldSkip: z.boolean(),
         }),
-      }
+      },
     );
 
     await step.email(
-      'send-email',
-      async controls => {
+      "send-email",
+      async (controls) => {
         console.log({ controls });
         return {
           subject: controls.subject,
@@ -38,10 +38,10 @@ export const welcomeOnboardingEmail = workflow(
 
           return !shouldContinue;
         },
-      }
+      },
     );
 
-    await step.inApp('In-App Step', async () => {
+    await step.inApp("In-App Step", async () => {
       return {
         subject: payload.inAppSubject,
         body: payload.inAppBody,
@@ -50,39 +50,39 @@ export const welcomeOnboardingEmail = workflow(
     });
 
     await step.chat(
-      'chat-step',
+      "chat-step",
       async () => {
         return {
-          body: 'Base Chat Step Content',
+          body: "Base Chat Step Content",
         };
       },
       {
         providers: {
-          slack: async step => {
+          slack: async (step) => {
             return {
-              body: 'Hello, world!',
+              body: "Hello, world!",
               blocks: [
                 {
-                  type: 'section',
+                  type: "section",
                   text: {
-                    type: 'mrkdwn',
-                    text: 'Hello, world!',
+                    type: "mrkdwn",
+                    text: "Hello, world!",
                   },
                 },
               ],
             };
           },
         },
-      }
+      },
     );
   },
   {
     payloadSchema,
-  }
+  },
 );
 
 function mockInspectionService(seconds: number): Promise<boolean> {
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     setTimeout(() => {
       resolve(true);
     }, seconds * 1000);
