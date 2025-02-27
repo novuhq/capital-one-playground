@@ -7,6 +7,10 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
+      # Add a delay of 2 minutes before syncing
+      - name: Wait for 2 minutes
+        run: sleep 120
+        
       # https://github.com/novuhq/actions-novu-sync
       - name: Sync State to Novu
         uses: novuhq/actions-novu-sync@v2
