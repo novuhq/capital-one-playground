@@ -10,8 +10,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # Add a delay of 2 minutes before syncing
-      - name: Wait for 2 minutes
-        run: sleep 120
+      - name: Wait for 3 minutes
+        run: sleep 190
         
       # https://github.com/novuhq/actions-novu-sync
       - name: Sync State to Novu
