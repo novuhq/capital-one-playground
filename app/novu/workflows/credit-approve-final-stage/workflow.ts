@@ -3,11 +3,34 @@ import { z } from "zod";
 import { renderEmail } from "../../emails/novu-onboarding-email";
 import { emailControlSchema, payloadSchema } from "./schemas";
 
-export const welcomeOnboardingEmail = workflow(
-  "onboarding-workflow",
+export const creditApproveFinalStage = workflow(
+  "credit-approve-final-stage-workflow",
   async ({ step, payload }) => {
+    await step.inApp("In-App-pre-approve", async () => {
+      return {
+        subject: payload.inAppSubject,
+        body: payload.inAppBody,
+        avatar: payload.inAppAvatar,
+      };
+    });
+
+
+    await step.email(
+      "send-email-pre-approve",
+      async (controls) => {
+        console.log({ controls });
+        return {
+          subject: controls.subject,
+          body: renderEmail(controls, payload),
+        };
+      },
+      {
+        controlSchema: emailControlSchema,
+      },
+    );
+
     const customResolver = await step.custom(
-      "custom-resolver",
+      "governance-check",
       async () => {
         const shouldSkip = await mockInspectionService(300);
 
@@ -22,6 +45,17 @@ export const welcomeOnboardingEmail = workflow(
       },
     );
 
+    await step.inApp("In-App Step", async () => {
+      return {
+        subject: payload.inAppSubject,
+        body: payload.inAppBody,
+        avatar: payload.inAppAvatar,
+      };
+    }, {
+      skip: () => customResolver.shouldSkip
+    });
+
+
     await step.email(
       "send-email",
       async (controls) => {
@@ -33,21 +67,9 @@ export const welcomeOnboardingEmail = workflow(
       },
       {
         controlSchema: emailControlSchema,
-        skip: async () => {
-          const shouldContinue = await mockInspectionService(300);
-
-          return !shouldContinue;
-        },
+        skip: () => customResolver.shouldSkip
       },
     );
-
-    await step.inApp("In-App Step", async () => {
-      return {
-        subject: payload.inAppSubject,
-        body: payload.inAppBody,
-        avatar: payload.inAppAvatar,
-      };
-    });
 
     await step.chat(
       "chat-step",

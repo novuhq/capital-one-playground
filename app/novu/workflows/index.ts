@@ -1,1 +1,1 @@
-export * from "./welcome-onboarding-email";
+export * from "./credit-approve-final-stage";
